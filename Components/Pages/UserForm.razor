@@ -1,0 +1,108 @@
+@page "/user-form"
+@rendermode InteractiveServer
+
+<h3>User Details Form</h3>
+
+@if (submitted)
+{
+    <div class="alert alert-success">
+        <h4>Thanks, @model.FirstName!</h4>
+        <p>We received your details:</p>
+        <ul>
+            <li><strong>Name:</strong> @model.FirstName @model.LastName</li>
+            <li><strong>Email:</strong> @model.Email</li>
+            <li><strong>Country:</strong> @model.Country</li>
+            <li><strong>Age:</strong> @model.Age</li>
+        </ul>
+        <button class="btn btn-primary" @onclick="ResetForm">Fill Again</button>
+    </div>
+}
+else
+{
+    <EditForm Model="@model" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">First Name</label>
+            <InputText @bind-Value="model.FirstName" class="form-control" />
+            <ValidationMessage For="@(() => model.FirstName)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Last Name</label>
+            <InputText @bind-Value="model.LastName" class="form-control" />
+            <ValidationMessage For="@(() => model.LastName)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText @bind-Value="model.Email" type="email" class="form-control" />
+            <ValidationMessage For="@(() => model.Email)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Country</label>
+            <InputSelect @bind-Value="model.Country" class="form-select">
+                <option value="">-- Select a country --</option>
+                @foreach (var c in countries)
+                {
+                    <option value="@c">@c</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => model.Country)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Age</label>
+            <InputNumber @bind-Value="model.Age" class="form-control" />
+            <ValidationMessage For="@(() => model.Age)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </EditForm>
+}
+
+@code {
+    private UserModel model = new();
+    private bool submitted = false;
+
+    private readonly string[] countries =
+    {
+        "United States", "United Kingdom", "Canada", "Australia",
+        "Germany", "France", "Japan", "India", "Brazil", "Zambia"
+    };
+
+    private void HandleValidSubmit()
+    {
+        submitted = true;
+        Console.WriteLine($"Submitted: {model.FirstName} {model.LastName} ({model.Country})");
+    }
+
+    private void ResetForm()
+    {
+        model = new();
+        submitted = false;
+    }
+
+    public class UserModel
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.StringLength(50, MinimumLength = 2)]
+        public string FirstName { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public string LastName { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.EmailAddress]
+        public string Email { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(
+            ErrorMessage = "Please select a country.")]
+        public string Country { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Range(1, 120)]
+        public int Age { get; set; }
+    }
+}
